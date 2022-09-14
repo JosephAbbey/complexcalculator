@@ -1,3 +1,11 @@
-import Canvas from './Canvas.js';
+import Canvas, { chunkSize, Img } from './Canvas.js';
 
-new Canvas('#main').render();
+window.c = new Canvas('#main', () =>
+    Img(
+        new Array(chunkSize * chunkSize * 4).fill(
+            Math.round(Math.random() * 255),
+            0,
+            chunkSize * chunkSize * 4
+        )
+    )
+);
