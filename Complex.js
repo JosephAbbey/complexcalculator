@@ -43,7 +43,7 @@ export default class Complex {
         return new Complex(
             this.real * other.real - this.imaginary * other.imaginary,
             this.real * other.imaginary + other.real * this.imaginary
-        )
+        );
     }
 
     static div(a, b) {
@@ -55,6 +55,6 @@ export default class Complex {
         return new Complex(
             (this.real * other.real + this.imaginary * other.imaginary) / d,
             (other.real * this.imaginary - this.real * other.imaginary) / d
-        )
+        );
     }
 }

@@ -1,5 +1,3 @@
-import Canvas from "./Canvas.js";
+import Canvas from './Canvas.js';
 
-new Canvas(
-    "#main"
-).render();
+new Canvas('#main').render();
