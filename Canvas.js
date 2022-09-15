@@ -15,17 +15,14 @@ export default class Canvas {
                 : document.querySelector(element);
         if (el instanceof HTMLDivElement)
             el.appendChild((this.canvas = document.createElement('canvas')));
-        else if (el instanceof HTMLCanvasElement) this.canvas = el;
         else throw new CanvasError('Element not found.');
 
         this.canvas.width = this.canvas.parentElement.clientWidth;
         this.canvas.height = this.canvas.parentElement.clientHeight;
 
         this.ctx = this.canvas.getContext('2d');
-        this.ctx.imageSmoothingEnabled = false;
-        this.ctx.mozImageSmoothingEnabled = false;
-        this.ctx.webkitImageSmoothingEnabled = false;
-        this.ctx.msImageSmoothingEnabled = false;
+
+        this.canvas.style.filter = "blur(1px) url(#amplify-alpha)";
 
         this.ox = 0;
         this.oy = 0;
