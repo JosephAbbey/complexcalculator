@@ -18,18 +18,6 @@ export default class Canvas {
             el.appendChild((this.axis = document.createElement('canvas')));
         } else throw new CanvasError('Element not found.');
 
-        this.axis.width = this.canvas.width =
-            this.canvas.parentElement.clientWidth;
-        this.axis.height = this.canvas.height =
-            this.canvas.parentElement.clientHeight;
-        this.canvas.parentElement.addEventListener('resize', () => {
-            this.axis.width = this.canvas.width =
-                this.canvas.parentElement.clientWidth;
-            this.axis.height = this.canvas.height =
-                this.canvas.parentElement.clientHeight;
-            this.render();
-        });
-
         this.ctx = this.canvas.getContext('2d');
         this.axis_ctx = this.axis.getContext('2d');
 
@@ -39,8 +27,8 @@ export default class Canvas {
         this.axis.style.position = this.canvas.style.position = 'absolute';
         this.axis.style.inset = this.canvas.style.inset = '0';
 
-        this.ox = this.axis.width / 10;
-        this.oy = this.axis.height / 10;
+        this.ox = 0;
+        this.oy = 0;
 
         this.md = false;
         this.mx = 0;
@@ -84,6 +72,18 @@ export default class Canvas {
             false
         );
 
+        window.addEventListener('resize', this.resize);
+        this.resize();
+        this.ox = this.axis.width / 2;
+        this.oy = this.axis.height / 2;
+        this.render();
+    }
+
+    resize() {
+        this.axis.width = this.canvas.width =
+            this.canvas.parentElement.clientWidth;
+        this.axis.height = this.canvas.height =
+            this.canvas.parentElement.clientHeight;
         this.render();
     }
 

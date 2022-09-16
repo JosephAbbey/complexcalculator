@@ -1,10 +1,20 @@
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Complex calculator</title>
+
         <link rel="stylesheet" href="./index.css" />
+        <script src="./index.js" type="module" defer></script>
+
+        <link
+            rel="stylesheet"
+            media="all"
+            href="https://guppy.js.org/build/guppy-default.min.css"
+        />
+        <script src="https://guppy.js.org//build/guppy.min.js"></script>
     </head>
     <body>
         <svg width="0" height="0" style="position: absolute; z-index: -1">
@@ -17,12 +27,35 @@
                     height="100%"
                 >
                     <feComponentTransfer>
-                        <feFuncA type="table" tableValues="0 3"></feFuncA>
+                        <feFuncR type="table" tableValues="0 3"></feFuncR>
+                        <feFuncG type="table" tableValues="0 3"></feFuncG>
+                        <feFuncB type="table" tableValues="0 3"></feFuncB>
                     </feComponentTransfer>
                 </filter>
             </defs>
         </svg>
-        <div id="main"></div>
-        <script src="./index.js" type="module"></script>
+        <div id="grid">
+            <div id="editor">
+                <div id="buttons">
+                    <button id="render">render</button>
+                    <button id="new_editor">+</button>
+                </div>
+                <div id="editor-0">
+                    <div id="guppy-0"></div>
+                    <div>
+                        <input
+                            type="number"
+                            name="threshold-0"
+                            id="threshold-0"
+                            min="0"
+                            value="250"
+                        />
+                        <input type="color" name="colour-0" id="colour-0" />
+                    </div>
+                </div>
+            </div>
+            <div id="divider">||</div>
+            <div id="main"></div>
+        </div>
     </body>
 </html>
