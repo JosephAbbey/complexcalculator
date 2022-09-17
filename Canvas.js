@@ -13,19 +13,19 @@ export default class Canvas {
             element instanceof HTMLElement
                 ? element
                 : document.querySelector(element);
-        if (el instanceof HTMLDivElement)
+        if (el instanceof HTMLDivElement) {
             el.appendChild((this.canvas = document.createElement('canvas')));
-        else if (el instanceof HTMLCanvasElement) this.canvas = el;
-        else throw new CanvasError('Element not found.');
-
-        this.canvas.width = this.canvas.parentElement.clientWidth;
-        this.canvas.height = this.canvas.parentElement.clientHeight;
+            el.appendChild((this.axis = document.createElement('canvas')));
+        } else throw new CanvasError('Element not found.');
 
         this.ctx = this.canvas.getContext('2d');
-        this.ctx.imageSmoothingEnabled = false;
-        this.ctx.mozImageSmoothingEnabled = false;
-        this.ctx.webkitImageSmoothingEnabled = false;
-        this.ctx.msImageSmoothingEnabled = false;
+        this.axis_ctx = this.axis.getContext('2d');
+
+        this.canvas.style.filter = 'blur(1px) url(#amplify-alpha)';
+
+        this.canvas.parentElement.style.position = 'relative';
+        this.axis.style.position = this.canvas.style.position = 'absolute';
+        this.axis.style.inset = this.canvas.style.inset = '0';
 
         this.ox = 0;
         this.oy = 0;
@@ -37,7 +37,7 @@ export default class Canvas {
         this.chunkFunction = chunkFunction;
         this.bitmaps = [];
 
-        this.canvas.addEventListener(
+        this.axis.addEventListener(
             'mousedown',
             (evt) => {
                 evt.preventDefault();
@@ -47,7 +47,7 @@ export default class Canvas {
             },
             false
         );
-        this.canvas.addEventListener(
+        this.axis.addEventListener(
             'mouseup',
             (evt) => {
                 evt.preventDefault();
@@ -55,7 +55,7 @@ export default class Canvas {
             },
             false
         );
-        this.canvas.addEventListener(
+        this.axis.addEventListener(
             'mousemove',
             (evt) => {
                 if (this.md) {
@@ -72,6 +72,18 @@ export default class Canvas {
             false
         );
 
+        window.addEventListener('resize', this.resize);
+        this.resize();
+        this.ox = this.axis.width / 2;
+        this.oy = this.axis.height / 2;
+        this.render();
+    }
+
+    resize() {
+        this.axis.width = this.canvas.width =
+            this.canvas.parentElement.clientWidth;
+        this.axis.height = this.canvas.height =
+            this.canvas.parentElement.clientHeight;
         this.render();
     }
 
@@ -81,6 +93,136 @@ export default class Canvas {
     }
 
     render() {
+        this.axis_ctx.clearRect(0, 0, this.axis.width, this.axis.height);
+
+        var grid_size = 25;
+        var x_axis_distance_grid_lines = this.oy / grid_size;
+        var off_x = (this.oy % grid_size) / grid_size;
+        var y_axis_distance_grid_lines = this.ox / grid_size;
+        var off_y = (this.ox % grid_size) / grid_size;
+
+        // no of vertical grid lines
+        var num_lines_x = this.axis.height / grid_size;
+
+        // no of horizontal grid lines
+        var num_lines_y = this.axis.width / grid_size;
+
+        // Draw grid lines along X-axis
+        for (var i = off_x; i <= num_lines_x + off_x; i++) {
+            this.axis_ctx.beginPath();
+            this.axis_ctx.lineWidth = 1;
+
+            // If line represents X-axis draw in different color
+            if (i == x_axis_distance_grid_lines)
+                this.axis_ctx.strokeStyle = '#000000';
+            else this.axis_ctx.strokeStyle = '#0000001f';
+
+            if (i == num_lines_x) {
+                this.axis_ctx.moveTo(0, grid_size * i);
+                this.axis_ctx.lineTo(this.axis.width, grid_size * i);
+            } else {
+                this.axis_ctx.moveTo(0, grid_size * i + 0.5);
+                this.axis_ctx.lineTo(this.axis.width, grid_size * i + 0.5);
+            }
+            this.axis_ctx.stroke();
+        }
+
+        // Draw grid lines along Y-axis
+        for (i = off_y; i <= num_lines_y + off_y; i++) {
+            this.axis_ctx.beginPath();
+            this.axis_ctx.lineWidth = 1;
+
+            // If line represents Y-axis draw in different color
+            if (i == y_axis_distance_grid_lines)
+                this.axis_ctx.strokeStyle = '#000000';
+            else this.axis_ctx.strokeStyle = '#0000001f';
+
+            if (i == num_lines_y) {
+                this.axis_ctx.moveTo(grid_size * i, 0);
+                this.axis_ctx.lineTo(grid_size * i, this.axis.height);
+            } else {
+                this.axis_ctx.moveTo(grid_size * i + 0.5, 0);
+                this.axis_ctx.lineTo(grid_size * i + 0.5, this.axis.height);
+            }
+            this.axis_ctx.stroke();
+        }
+
+        this.axis_ctx.translate(this.ox, this.oy);
+
+        // Ticks marks along the positive X-axis
+        for (i = 1; i < num_lines_y - y_axis_distance_grid_lines; i++) {
+            this.axis_ctx.beginPath();
+            this.axis_ctx.lineWidth = 1;
+            this.axis_ctx.strokeStyle = '#000000';
+
+            // Draw a tick mark 6px long (-3 to 3)
+            this.axis_ctx.moveTo(grid_size * i + 0.5, -3);
+            this.axis_ctx.lineTo(grid_size * i + 0.5, 3);
+            this.axis_ctx.stroke();
+
+            // Text value at that point
+            this.axis_ctx.font = '9px Arial';
+            this.axis_ctx.textAlign = 'start';
+            this.axis_ctx.fillText(grid_size * i, grid_size * i - 2, 15);
+        }
+
+        // Ticks marks along the negative X-axis
+        for (i = 1; i < y_axis_distance_grid_lines; i++) {
+            this.axis_ctx.beginPath();
+            this.axis_ctx.lineWidth = 1;
+            this.axis_ctx.strokeStyle = '#000000';
+
+            // Draw a tick mark 6px long (-3 to 3)
+            this.axis_ctx.moveTo(-grid_size * i + 0.5, -3);
+            this.axis_ctx.lineTo(-grid_size * i + 0.5, 3);
+            this.axis_ctx.stroke();
+
+            // Text value at that point
+            this.axis_ctx.font = '9px Arial';
+            this.axis_ctx.textAlign = 'end';
+            this.axis_ctx.fillText(-grid_size * i, -grid_size * i + 3, 15);
+        }
+
+        // Ticks marks along the positive Y-axis
+        // Positive Y-axis of graph is negative Y-axis of the canvas
+        for (i = 1; i < num_lines_x - x_axis_distance_grid_lines; i++) {
+            this.axis_ctx.beginPath();
+            this.axis_ctx.lineWidth = 1;
+            this.axis_ctx.strokeStyle = '#000000';
+
+            // Draw a tick mark 6px long (-3 to 3)
+            this.axis_ctx.moveTo(-3, grid_size * i + 0.5);
+            this.axis_ctx.lineTo(3, grid_size * i + 0.5);
+            this.axis_ctx.stroke();
+
+            // Text value at that point
+            this.axis_ctx.font = '9px Arial';
+            this.axis_ctx.textAlign = 'start';
+            this.axis_ctx.fillText(-grid_size * i, 8, grid_size * i + 3);
+        }
+
+        // Ticks marks along the negative Y-axis
+        // Negative Y-axis of graph is positive Y-axis of the canvas
+        for (i = 1; i < x_axis_distance_grid_lines; i++) {
+            this.axis_ctx.beginPath();
+            this.axis_ctx.lineWidth = 1;
+            this.axis_ctx.strokeStyle = '#000000';
+
+            // Draw a tick mark 6px long (-3 to 3)
+            this.axis_ctx.moveTo(-3, -grid_size * i + 0.5);
+            this.axis_ctx.lineTo(3, -grid_size * i + 0.5);
+            this.axis_ctx.stroke();
+
+            // Text value at that point
+            this.axis_ctx.font = '9px Arial';
+            this.axis_ctx.textAlign = 'start';
+            this.axis_ctx.fillText(grid_size * i, 8, -grid_size * i + 3);
+        }
+
+        this.axis_ctx.translate(-this.ox, -this.oy);
+
+        // canvas
+
         let sx = Math.floor(-this.ox / chunkSize);
         let ex = Math.floor((-this.ox + this.canvas.width) / chunkSize);
         let sy = Math.floor(-this.oy / chunkSize);
@@ -89,7 +231,6 @@ export default class Canvas {
         let dy = ey - sy;
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = 'rgb(255, 0, 0)';
         for (let x = 0; x <= dx; x++)
             for (let y = 0; y <= dy; y++)
                 this.ctx.putImageData(
@@ -100,7 +241,8 @@ export default class Canvas {
                     )[sy + y] === 'undefined'
                         ? (this.bitmaps[sx + x][sy + y] = this.chunkFunction(
                               sx + x,
-                              sy + y
+                              sy + y,
+                              chunkSize
                           ))
                         : this.bitmaps[sx + x][sy + y],
                     cleanMod(this.ox % chunkSize) + x * chunkSize,
