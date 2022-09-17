@@ -6,11 +6,15 @@ const to_func = (editor) =>
     eval(
         'const sqrt=Math.sqrt;const sin=Math.sin;const cos=Math.cos;const tan=Math.tan;const log=Math.log;' +
             `const eq=(a,b)=>Math.abs(a-b)<=${editor.threshold}?(${editor.threshold}-Math.abs(a-b))/${editor.threshold}:0;` +
+            `const lt=(a,b)=>Number(a<b);` +
+            `const gt=(a,b)=>Number(b>a);` +
             '(x, y)=>' +
             editor.g
                 .text()
                 .replaceAll('^', '**')
                 .replace(/(.+)=(.+)/g, 'eq($1,$2)')
+                .replace(/(.+)<(.+)/g, 'lt($1,$2)')
+                .replace(/(.+)>(.+)/g, 'gt($1,$2)')
     );
 
 const state = {
