@@ -23,7 +23,11 @@
     margin-inline: .5rem;
 }
 
-#editor > div[id*="editor-"] > :nth-child(2) {
+#editor > div[id*="editor-"] {
+    margin-bottom: .1rem;
+}
+
+#editor > div[id*="editor-"] > .c {
     display: flex;
     justify-content: center;
     border-left:   2px solid black;
@@ -31,7 +35,32 @@
     border-right:  2px solid black;
 }
 
-#editor > div[id*="editor-"] > :nth-child(2) > input {
+#editor > div[id*="editor-"] > .e:not([id*="guppy-"]) {
+    display: flex;
+    justify-content: center;
+    border: 2px solid black;
+    padding: 0.5rem;
+}
+
+#editor > div[id*="editor-"] > .e:not([id*="guppy-"]) > label {
+    margin: 1rem;
+    font-family: freeserif,
+        "times new roman",
+        serif;
+}
+
+#editor > div[id*="editor-"] > .e:not([id*="guppy-"]) > input {
+    padding-left: .5rem;
+    border: 2px solid black;
+    border-radius: 0;
+}
+
+#editor > div[id*="editor-"] > .e:not([id*="guppy-"]) > [id*="guppy-"] {
+    margin-right: 1rem;
+    flex: 1;
+}
+
+#editor > div[id*="editor-"] > .c > input {
     margin: 0.5rem;
 }
 
