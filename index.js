@@ -1,5 +1,6 @@
 import Canvas, { Img } from './Canvas.js';
 
+// safer but slower implementation
 // const to_func = (editor, vars = new Map()) => {
 //     let vs = Object.fromEntries(vars);
 //     return (v) => {
@@ -18,6 +19,7 @@ import Canvas, { Img } from './Canvas.js';
 //     };
 // };
 
+// could use the AST output instead of the text output to make this safer but still generate some js code
 const to_func = (editor, vars = '') =>
     eval(
         vars +
@@ -61,23 +63,23 @@ state.editors[0].function = to_func(state.editors[0]);
 console.log(state.editors[0].function);
 state.graphs.push(state.editors[0]);
 
-state.editors.push({
-    input: document.getElementById('value-1'),
-    value: 1,
-    name: 'a',
-    type: 'value',
-});
-state.values.push(state.editors[1]);
+// state.editors.push({
+//     input: document.getElementById('value-1'),
+//     value: 1,
+//     name: 'a',
+//     type: 'value',
+// });
+// state.values.push(state.editors[1]);
 
-state.editors.push({
-    guppy: new Guppy('guppy-2'),
-    value: 2,
-    name: 'b',
-    type: 'equation',
-});
-state.editors[2].guppy.import_text('2*a');
-state.editors[2].guppy.activate();
-state.equations.push(state.editors[2]);
+// state.editors.push({
+//     guppy: new Guppy('guppy-2'),
+//     value: 2,
+//     name: 'b',
+//     type: 'equation',
+// });
+// state.editors[2].guppy.import_text('2*a');
+// state.editors[2].guppy.activate();
+// state.equations.push(state.editors[2]);
 
 const bAverage = (x) => {
     const y = x.reduce((a, b) => (isNaN(b) ? a : [b + a[0], a[1] + 1]), [0, 0]);
@@ -167,9 +169,6 @@ const editor = document.querySelector('#editor');
 document.addEventListener(
     'keydown',
     (e) => e.ctrlKey && e.key === 's' && (e.preventDefault(), render()),
-    {
-        passive: true,
-    }
 );
 document.querySelector('#render').addEventListener('click', render, {
     passive: true,
