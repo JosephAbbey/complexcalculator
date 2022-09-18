@@ -1,11 +1,33 @@
 import Canvas, { Img } from './Canvas.js';
 
-// g.func()({ x: 0, y: 0, '=': eq });
+// const to_func = (editor, vars = new Map()) => {
+//     let vs = Object.fromEntries(vars);
+//     return (v) => {
+//         Object.keys(vs).forEach((key) => (v[key] = vs[key]));
+//         return editor.guppy.func({
+//             '=': (t) => (e) => {
+//                 const a = t[0](e);
+//                 const b = t[1](e);
+//                 return Math.abs(a - b) <= editor.threshold
+//                     ? (editor.threshold - Math.abs(a - b)) / editor.threshold
+//                     : 0;
+//             },
+//             '>': (t) => (e) => Number(t[0](e) > t[1](e)),
+//             '<': (t) => (e) => Number(t[0](e) < t[1](e)),
+//         })(v);
+//     };
+// };
 
-const to_func = (editor, vars) =>
+const to_func = (editor, vars = '') =>
     eval(
-        [...vars.keys()].map((v) => `const ${v} = ${vars.get(v)};`).join("") +
-        'const sqrt=Math.sqrt;const sin=Math.sin;const cos=Math.cos;const tan=Math.tan;const log=Math.log;' +
+        vars +
+        'const sqrt=Math.sqrt;' +
+        'const sin=Math.sin;' +
+        'const cos=Math.cos;' +
+        'const tan=Math.tan;' +
+        'const log=Math.log;' +
+        'const pi=Math.PI;' +
+        'const e=Math.E;' +
         `const eq=(a,b)=>Math.abs(a-b)<=${editor.threshold}?(${editor.threshold}-Math.abs(a-b))/${editor.threshold}:0;` +
         `const lt=(a,b)=>Number(a<b);` +
         `const gt=(a,b)=>Number(b>a);` +
@@ -31,30 +53,31 @@ state.editors.push({
     function: () => 0,
     threshold: 255,
     colour: [0, 0, 0],
-    type: "graph"
+    type: 'graph',
 });
 state.editors[0].guppy.import_text('x^2+y^2=100^2');
 state.editors[0].guppy.activate();
-state.editors[0].function = to_func(state.editors[0], new Map());
+state.editors[0].function = to_func(state.editors[0]);
+console.log(state.editors[0].function);
 state.graphs.push(state.editors[0]);
 
-// state.editors.push({
-//     input: document.getElementById("value-1"),
-//     value: 1,
-//     name: "a",
-//     type: "value"
-// });
-// state.values.push(state.editors[1]);
+state.editors.push({
+    input: document.getElementById('value-1'),
+    value: 1,
+    name: 'a',
+    type: 'value',
+});
+state.values.push(state.editors[1]);
 
-// state.editors.push({
-//     guppy: new Guppy('guppy-2'),
-//     value: 2,
-//     name: "b",
-//     type: "equation"
-// });
-// state.editors[2].guppy.import_text('2*a');
-// state.editors[2].guppy.activate();
-// state.equations.push(state.editors[2]);
+state.editors.push({
+    guppy: new Guppy('guppy-2'),
+    value: 2,
+    name: 'b',
+    type: 'equation',
+});
+state.editors[2].guppy.import_text('2*a');
+state.editors[2].guppy.activate();
+state.equations.push(state.editors[2]);
 
 const bAverage = (x) => {
     const y = x.reduce((a, b) => (isNaN(b) ? a : [b + a[0], a[1] + 1]), [0, 0]);
@@ -78,12 +101,11 @@ const canvas = new Canvas('#main', (x, y, chunkSize) => {
             const py = -(y * chunkSize + ay);
             const values = state.graphs.map((editor) => {
                 try {
-                    return zeroNaN(editor.function(px, py))
+                    return zeroNaN(editor.function(px, py));
                 } catch {
-                    return NaN
+                    return NaN;
                 }
-            }
-            );
+            });
             a.push(
                 bAverage(state.graphs.map((_, i) => colours[i][0] * values[i]))
             );
@@ -108,46 +130,62 @@ const parseHex = (hex) => [
 
 const render = () => {
     const vars = new Map();
-
     state.values.forEach((editor) => {
-        vars.set(editor.name, editor.value = editor.input.value);
+        vars.set(editor.name, (editor.value = editor.input.value));
     });
 
     let equationsToDo = state.equations.length;
+    let varsS = [...vars.keys()]
+        .map((v) => `const ${v} = ${vars.get(v)};`)
+        .join('');
     for (var i = 0; equationsToDo > 0 && i < 20; i++) {
         state.equations.forEach((editor) => {
             try {
-                vars.set(editor.name, editor.value = to_func(editor, vars)());
+                vars.set(
+                    editor.name,
+                    (editor.value = to_func(editor, varsS)())
+                );
+                varsS = [...vars.keys()]
+                    .map((v) => `const ${v} = ${vars.get(v)};`)
+                    .join('');
                 equationsToDo--;
             } catch { }
         });
     }
 
     state.graphs.forEach((editor, i) => {
-        editor.function = to_func(editor, vars);
+        editor.function = to_func(editor, varsS);
         editor.threshold = document.querySelector('#threshold-' + i).value;
-        editor.colour = parseHex(
-            document.querySelector('#colour-' + i).value
-        );
+        editor.colour = parseHex(document.querySelector('#colour-' + i).value);
     });
 
     canvas.clear();
 };
 
-document.addEventListener('keydown', e =>
-    e.ctrlKey && e.key === 's' &&
-    (e.preventDefault(),
-        render())
+const editor = document.querySelector('#editor');
+
+document.addEventListener(
+    'keydown',
+    (e) => e.ctrlKey && e.key === 's' && (e.preventDefault(), render()),
+    {
+        passive: true,
+    }
 );
-document.querySelector('#render').addEventListener(
-    'click',
-    render
+document.querySelector('#render').addEventListener('click', render, {
+    passive: true,
+});
+editor.addEventListener(
+    'focusout',
+    (e) => !editor.contains(e.relatedTarget) && render(),
+    {
+        passive: true,
+    }
 );
 
 document.querySelector('#new_graph').addEventListener('click', () => {
     const e = document.createElement('div');
     e.id = 'editor-' + state.editors.length;
-    e.className = "graph";
+    e.className = 'graph';
 
     e.innerHTML = `<div id="guppy-${state.editors.length}" class="e"></div>
 <div class="c">
@@ -165,29 +203,37 @@ document.querySelector('#new_graph').addEventListener('click', () => {
 
     const i =
         state.editors.push({
-            g: new Guppy('guppy-' + state.editors.length),
-            f: () => 0,
+            guppy: new Guppy('guppy-' + state.editors.length),
+            function: () => 0,
             threshold: 4,
             colour: [0, 0, 0],
-            type: "graph"
+            type: 'graph',
         }) - 1;
-    state.editors[i].g.import_text('y=2x');
-    state.editors[i].g.activate();
-    state.editors[i].f = to_func(state.editors[0]);
+    state.editors[i].guppy.import_text('y=2x');
+    state.editors[i].guppy.activate();
+    state.editors[i].function = to_func(state.editors[0]);
 
     state.graphs.push(state.editors[i]);
 });
 
-document.querySelector('#new_value').addEventListener('click', function new_value() {
-    const name = prompt("Variable name (1 character): ");
-    if (!name) return;
-    if (!/[a-zA-Z]/.test(name) || state.editors.some((editor) => editor.name === name ? true : undefined)) return new_value();
+document
+    .querySelector('#new_value')
+    .addEventListener('click', function new_value() {
+        const name = prompt('Variable name (1 character): ');
+        if (!name) return;
+        if (
+            !/^[a-wzA-Z]$/.test(name) ||
+            state.editors.some((editor) =>
+                editor.name === name ? true : undefined
+            )
+        )
+            return new_value();
 
-    const e = document.createElement('div');
-    e.id = 'editor-' + state.editors.length;
-    e.className = "value";
+        const e = document.createElement('div');
+        e.id = 'editor-' + state.editors.length;
+        e.className = 'value';
 
-    e.innerHTML = `<div class="e">
+        e.innerHTML = `<div class="e">
     <label for="value-${state.editors.length}">${name} =</label>
     <input
         type="number"
@@ -197,59 +243,55 @@ document.querySelector('#new_value').addEventListener('click', function new_valu
     />
 </div>`;
 
-    document.querySelector('#editor').appendChild(e);
+        document.querySelector('#editor').appendChild(e);
 
-    const i =
-        state.editors.push({
-            input: document.getElementById("value-" + state.editors.length),
-            value: 1,
-            name,
-            type: "value"
-        }) - 1;
+        const i =
+            state.editors.push({
+                input: document.getElementById('value-' + state.editors.length),
+                value: 1,
+                name,
+                type: 'value',
+            }) - 1;
 
-    state.values.push(state.editors[i])
-});
+        state.values.push(state.editors[i]);
+    });
 
-document.querySelector('#new_equation').addEventListener('click', function new_equation() {
-    const name = prompt("Variable name (1 character): ");
-    if (!name) return;
-    if (!/[a-zA-Z]/.test(name) || state.editors.some((editor) => editor.name === name ? true : undefined)) return new_equation();
+document
+    .querySelector('#new_equation')
+    .addEventListener('click', function new_equation() {
+        const name = prompt('Variable name (1 character): ');
+        if (!name) return;
+        if (
+            !/^[a-wzA-Z]$/.test(name) ||
+            state.editors.some((editor) =>
+                editor.name === name ? true : undefined
+            )
+        )
+            return new_equation();
 
-    const e = document.createElement('div');
-    e.id = 'editor-' + state.editors.length;
-    e.className = "graph";
+        const e = document.createElement('div');
+        e.id = 'editor-' + state.editors.length;
+        e.className = 'graph';
 
-    e.innerHTML = `<div class="e">
+        e.innerHTML = `<div class="e">
     <label for="guppy-${state.editors.length}">${name} =</label>
     <div id="guppy-${state.editors.length}"></div>
 </div>`;
 
-    document.querySelector('#editor').appendChild(e);
+        document.querySelector('#editor').appendChild(e);
 
-    const i =
-        state.editors.push({
-            guppy: new Guppy('guppy-' + state.editors.length),
-            value: 2,
-            name,
-            type: "equation"
-        }) - 1;
-    state.editors[i].guppy.import_text('2*a');
-    state.editors[i].guppy.activate();
+        const i =
+            state.editors.push({
+                guppy: new Guppy('guppy-' + state.editors.length),
+                value: 2,
+                name,
+                type: 'equation',
+            }) - 1;
+        state.editors[i].guppy.import_text('2*a');
+        state.editors[i].guppy.activate();
 
-    state.equations.push(state.editors[i]);
-});
+        state.equations.push(state.editors[i]);
+    });
 
-const divider = document.querySelector('#divider');
-
-divider.addEventListener('mousedown', (e) => {
-    e.target.mousedown = true;
-});
-window.addEventListener('mouseup', (e) => {
-    e.target.mousedown = false;
-});
-window.addEventListener('mousemove', (e) => {
-    divider.mousedown &&
-        ((document.querySelector('#editor').style.width =
-            e.screenX - divider.clientWidth / 2 + 'px'),
-            canvas.resize());
-});
+window.state = state;
+window.canvas = canvas;

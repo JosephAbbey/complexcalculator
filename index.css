@@ -11,10 +11,14 @@
 
 #editor {
     width: 25rem;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    resize: horizontal;
 }
 
 #editor > div#buttons {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     padding-block: .5rem;
 }
@@ -29,6 +33,7 @@
 
 #editor > div[id*="editor-"] > .c {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     border-left:   2px solid black;
     border-bottom: 2px solid black;
@@ -62,15 +67,6 @@
 
 #editor > div[id*="editor-"] > .c > input {
     margin: 0.5rem;
-}
-
-#divider {
-    width: 0.75rem;
-    background-color: lightgray;
-    text-align: center;
-    padding-top: calc(50vh - 1em);
-    user-select: none;
-    cursor: e-resize;
 }
 
 #main {
