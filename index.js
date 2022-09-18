@@ -221,7 +221,7 @@ document
         const name = prompt('Variable name (1 character): ');
         if (!name) return;
         if (
-            !/^[a-wzA-Z]$/.test(name) ||
+            !/^[a-df-wzA-Z]$/.test(name) ||
             state.editors.some((editor) =>
                 editor.name === name ? true : undefined
             )
@@ -261,7 +261,7 @@ document
         const name = prompt('Variable name (1 character): ');
         if (!name) return;
         if (
-            !/^[a-wzA-Z]$/.test(name) ||
+            !/^[a-df-wzA-Z]$/.test(name) ||
             state.editors.some((editor) =>
                 editor.name === name ? true : undefined
             )
