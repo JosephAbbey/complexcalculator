@@ -38,11 +38,13 @@
             <div id="editor">
                 <div id="buttons">
                     <button id="render">render</button>
-                    <button id="new_editor">+</button>
+                    <button id="new_graph">+ graph</button>
+                    <button id="new_value">+ value</button>
+                    <button id="new_equation">+ equation</button>
                 </div>
-                <div id="editor-0">
-                    <div id="guppy-0"></div>
-                    <div>
+                <div id="editor-0" class="graph">
+                    <div id="guppy-0" class="e"></div>
+                    <div class="c">
                         <input
                             type="number"
                             name="threshold-0"
@@ -53,8 +55,24 @@
                         <input type="color" name="colour-0" id="colour-0" />
                     </div>
                 </div>
+                <!-- <div id="editor-1" class="value">
+                    <div class="e">
+                        <label for="value-1">a =</label>
+                        <input
+                            type="number"
+                            name="value-1"
+                            id="value-1"
+                            value="1"
+                        />
+                    </div>
+                </div>
+                <div id="editor-2" class="equation">
+                    <div class="e">
+                        <label for="guppy-2">b =</label>
+                        <div id="guppy-2"></div>
+                    </div>
+                </div> -->
             </div>
-            <div id="divider">||</div>
             <div id="main"></div>
         </div>
     </body>

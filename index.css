@@ -11,10 +11,14 @@
 
 #editor {
     width: 25rem;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    resize: horizontal;
 }
 
 #editor > div#buttons {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     padding-block: .5rem;
 }
@@ -23,25 +27,46 @@
     margin-inline: .5rem;
 }
 
-#editor > div[id*="editor-"] > :nth-child(2) {
+#editor > div[id*="editor-"] {
+    margin-bottom: .1rem;
+}
+
+#editor > div[id*="editor-"] > .c {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     border-left:   2px solid black;
     border-bottom: 2px solid black;
     border-right:  2px solid black;
 }
 
-#editor > div[id*="editor-"] > :nth-child(2) > input {
-    margin: 0.5rem;
+#editor > div[id*="editor-"] > .e:not([id*="guppy-"]) {
+    display: flex;
+    justify-content: center;
+    border: 2px solid black;
+    padding: 0.5rem;
 }
 
-#divider {
-    width: 0.75rem;
-    background-color: lightgray;
-    text-align: center;
-    padding-top: calc(50vh - 1em);
-    user-select: none;
-    cursor: e-resize;
+#editor > div[id*="editor-"] > .e:not([id*="guppy-"]) > label {
+    margin: 1rem;
+    font-family: freeserif,
+        "times new roman",
+        serif;
+}
+
+#editor > div[id*="editor-"] > .e:not([id*="guppy-"]) > input {
+    padding-left: .5rem;
+    border: 2px solid black;
+    border-radius: 0;
+}
+
+#editor > div[id*="editor-"] > .e:not([id*="guppy-"]) > [id*="guppy-"] {
+    margin-right: 1rem;
+    flex: 1;
+}
+
+#editor > div[id*="editor-"] > .c > input {
+    margin: 0.5rem;
 }
 
 #main {

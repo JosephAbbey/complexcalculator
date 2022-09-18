@@ -1,9 +1,9 @@
-export class CanvasError extends Error {}
+export class CanvasError extends Error { }
 
 export const chunkSize = 100;
 
 export const Img = (data) =>
-    new ImageData(new Uint8ClampedArray(data), chunkSize);
+    createImageBitmap(new ImageData(new Uint8ClampedArray(data), chunkSize));
 
 const cleanMod = (a) => (Math.sign(a) === 1 ? a - chunkSize : a);
 
@@ -23,10 +23,11 @@ export default class Canvas {
 
         this.canvas.style.filter = 'blur(1px) url(#amplify-alpha)';
 
-        this.canvas.parentElement.style.position = 'relative';
+        el.style.position = 'relative';
         this.axis.style.position = this.canvas.style.position = 'absolute';
         this.axis.style.inset = this.canvas.style.inset = '0';
 
+        // this.os = 1;
         this.ox = 0;
         this.oy = 0;
 
@@ -39,31 +40,31 @@ export default class Canvas {
 
         this.axis.addEventListener(
             'mousedown',
-            (evt) => {
-                evt.preventDefault();
+            (e) => {
+                e.preventDefault();
                 this.md = true;
-                this.mx = evt.clientX;
-                this.my = evt.clientY;
+                this.mx = e.clientX;
+                this.my = e.clientY;
             },
             false
         );
         this.axis.addEventListener(
             'mouseup',
-            (evt) => {
-                evt.preventDefault();
+            (e) => {
+                e.preventDefault();
                 this.md = false;
             },
             false
         );
         this.axis.addEventListener(
             'mousemove',
-            (evt) => {
+            (e) => {
+                e.preventDefault();
                 if (this.md) {
-                    evt.preventDefault();
-                    var dx = evt.clientX - this.mx,
-                        dy = evt.clientY - this.my;
-                    this.mx = evt.clientX;
-                    this.my = evt.clientY;
+                    var dx = e.clientX - this.mx,
+                        dy = e.clientY - this.my;
+                    this.mx = e.clientX;
+                    this.my = e.clientY;
                     this.ox += dx;
                     this.oy += dy;
                     this.render();
@@ -71,19 +72,30 @@ export default class Canvas {
             },
             false
         );
+        // this.axis.addEventListener(
+        //     'wheel',
+        //     (e) => {
+        //         e.preventDefault();
+        //         this.os *= 1 + (-Math.sign(e.deltaY) * 0.1);
+        //         this.os = Math.min(Math.max(this.os, 0.1), 10);
+        //         this.render();
+        //     },
+        //     false
+        // );
 
-        window.addEventListener('resize', this.resize);
-        this.resize();
+        new ResizeObserver(([entry]) => {
+            this.resize(entry.contentRect.width, entry.contentRect.height);
+        }).observe(el);
+
+        this.resize(el.clientWidth, el.clientHeight);
         this.ox = this.axis.width / 2;
         this.oy = this.axis.height / 2;
         this.render();
     }
 
-    resize() {
-        this.axis.width = this.canvas.width =
-            this.canvas.parentElement.clientWidth;
-        this.axis.height = this.canvas.height =
-            this.canvas.parentElement.clientHeight;
+    resize(width, height) {
+        this.axis.width = this.canvas.width = width;
+        this.axis.height = this.canvas.height = height;
         this.render();
     }
 
@@ -92,9 +104,31 @@ export default class Canvas {
         this.render();
     }
 
-    render() {
+    async draw(x, y, ox, oy, sx, sy) {
+        this.ctx.drawImage(
+            await (typeof (
+                typeof this.bitmaps[sx + x] === 'undefined'
+                    ? (this.bitmaps[sx + x] = [])
+                    : this.bitmaps[sx + x]
+            )[sy + y] === 'undefined'
+                ? (this.bitmaps[sx + x][sy + y] = this.chunkFunction(
+                    sx + x,
+                    sy + y,
+                    chunkSize
+                ))
+                : this.bitmaps[sx + x][sy + y]),
+            Math.round(x * chunkSize + ox),
+            Math.round(y * chunkSize + oy)
+        );
+    }
+
+    async render() {
+        this.ctx.save();
+        this.axis_ctx.save();
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.axis_ctx.clearRect(0, 0, this.axis.width, this.axis.height);
 
+        //#region Axis
         var grid_size = 25;
         var x_axis_distance_grid_lines = this.oy / grid_size;
         var off_x = (this.oy % grid_size) / grid_size;
@@ -218,35 +252,25 @@ export default class Canvas {
             this.axis_ctx.textAlign = 'start';
             this.axis_ctx.fillText(grid_size * i, 8, -grid_size * i + 3);
         }
+        //#endregion
 
-        this.axis_ctx.translate(-this.ox, -this.oy);
+        //#region Graph
+        const sx = Math.floor(-this.ox / chunkSize);
+        const sy = Math.floor(-this.oy / chunkSize);
+        const dx = Math.floor((-this.ox + this.canvas.width) / chunkSize) - sx;
+        const dy = Math.floor((-this.oy + this.canvas.height) / chunkSize) - sy;
 
-        // canvas
+        const ox = cleanMod(this.ox % chunkSize);
+        const oy = cleanMod(this.oy % chunkSize);
 
-        let sx = Math.floor(-this.ox / chunkSize);
-        let ex = Math.floor((-this.ox + this.canvas.width) / chunkSize);
-        let sy = Math.floor(-this.oy / chunkSize);
-        let ey = Math.floor((-this.oy + this.canvas.height) / chunkSize);
-        let dx = ex - sx;
-        let dy = ey - sy;
-
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const promises = [];
         for (let x = 0; x <= dx; x++)
             for (let y = 0; y <= dy; y++)
-                this.ctx.putImageData(
-                    typeof (
-                        typeof this.bitmaps[sx + x] === 'undefined'
-                            ? (this.bitmaps[sx + x] = [])
-                            : this.bitmaps[sx + x]
-                    )[sy + y] === 'undefined'
-                        ? (this.bitmaps[sx + x][sy + y] = this.chunkFunction(
-                              sx + x,
-                              sy + y,
-                              chunkSize
-                          ))
-                        : this.bitmaps[sx + x][sy + y],
-                    cleanMod(this.ox % chunkSize) + x * chunkSize,
-                    cleanMod(this.oy % chunkSize) + y * chunkSize
-                );
+                promises.push(this.draw(x, y, ox, oy, sx, sy));
+        await Promise.all(promises);
+        //#endregion
+
+        this.ctx.restore();
+        this.axis_ctx.restore();
     }
 }
