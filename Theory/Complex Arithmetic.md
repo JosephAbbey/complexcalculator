@@ -58,3 +58,23 @@ $$
 $$
 \frac{z_1}{z_2} \equiv \frac{z_1 \overline{z_2}}{z_2 \overline{z_2}} \equiv \frac{(x_1 + iy_1)(x_2 - iy_2)}{|z_2|^2} \equiv \frac{x_1 x_2 - i x_1 y_2 + i y_1 x_2 - i^2 y_1 y_2}{|z_2|^2} \equiv \frac{(x_1 x_2 + y_1 y_2) + i(x_2 y_1 - x_1 y_2)}{|z_2|^2} \equiv \frac{x_1 x_2 + y_1 y_2}{|z_2|^2} + i\frac{x_2 y_1 - x_1 y_2}{|z_2|^2}
 $$
+
+## Roots Using Polar Form
+
+Let $z = re^{i\theta + 2k\pi}$ where $k \in \mathbb{Z}$. We know that the $n^{\textrm{th}}$ root of $z$, $\sqrt[n]{z}$, is the same as $z^{\frac{1}{n}} = (re^{i\theta})^{\frac{1}{n}} = r^{\frac{1}{n}}e^{i\frac{\theta + 2k\pi}{n}}$. Thus,
+
+$$
+\sqrt[n]{z} = \sqrt[n]{r}e^{i\phi}, \quad \phi := \frac{\theta + 2k\pi}{n}, \quad k \in [0, n).
+$$
+
+In the case of square roots, this becomes
+
+$$
+\sqrt{z} = \sqrt{r}e^{i\frac{\theta}{2}}, \sqrt{z} = \sqrt{r}e^{i\theta}.
+$$
+
+Which can be simplified to the form
+
+$$
+\sqrt{z} = \pm[\sqrt{\frac{1}{2}(|z| + \operatorname{Re} z)} + (\operatorname{sign}(\operatorname{Im} z))i\sqrt{\frac{1}{2}(|z| - \operatorname{Re} z)}].
+$$
