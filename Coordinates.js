@@ -48,7 +48,7 @@ export default class Coordinate {
  */
 export class Cartesian extends Coordinate {
     Polar = () =>
-        new Polar(Math.atan2(this.y, this.x), Math.sqrt(this.x + this.y));
+        new Polar(Math.atan2(this.y, this.x), Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
 
     constructor(x, y) {
         this._x = x;
